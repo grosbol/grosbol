@@ -1,0 +1,13 @@
+{
+  "name": "certificate-generator",
+  "version": "1.0.0",
+  "description": "A beginner-friendly certificate generator with HTTPS via Let's Encrypt",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup-ssl": "bash setup-ssl.sh"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
