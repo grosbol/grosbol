@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- html2canvas for capturing the certificate as an image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF for generating PDFs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <h1>Certificate Generator</h1>
+  <p class="subtitle">Fill in the details below and download your certificate!</p>
+
+  <!-- ===== INPUT FORM ===== -->
+  <div class="form-container">
+    <label for="recipientName">Recipient Name</label>
+    <input type="text" id="recipientName" placeholder="e.g. Jane Doe">
+
+    <label for="courseName">Course / Achievement</label>
+    <input type="text" id="courseName" placeholder="e.g. Introduction to Web Development">
+
+    <label for="issueDate">Date</label>
+    <input type="date" id="issueDate">
+
+    <label for="issuerName">Issued By</label>
+    <input type="text" id="issuerName" placeholder="e.g. Code Academy">
+
+    <div class="btn-row">
+      <button id="downloadBtn">Download as PDF</button>
+    </div>
+  </div>
+
+  <!-- ===== CERTIFICATE PREVIEW ===== -->
+  <h2 class="preview-heading">Live Preview</h2>
+
+  <div id="certificateWrapper">
+    <div id="certificate">
+      <div class="cert-border">
+        <div class="cert-inner">
+          <p class="cert-logo">&#127941;</p>
+          <h2 class="cert-title">Certificate of Completion</h2>
+          <p class="cert-subtitle">This certificate is proudly presented to</p>
+          <p class="cert-name" id="displayName">Jane Doe</p>
+          <p class="cert-body">
+            for successfully completing
+          </p>
+          <p class="cert-course" id="displayCourse">Introduction to Web Development</p>
+          <p class="cert-date">
+            on <span id="displayDate">February 8, 2026</span>
+          </p>
+          <div class="cert-footer">
+            <div class="cert-signature">
+              <div class="signature-line"></div>
+              <p id="displayIssuer">Code Academy</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
