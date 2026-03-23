@@ -1,6 +1,6 @@
 package com.example.confluence.sso.saml;
 
-import com.example.confluence.sso.config.SSOConfig;
+import com.example.confluence.sso.config.IdPConfig;
 import net.shibboleth.utilities.java.support.xml.ParserPool;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.core.xml.XMLObject;
@@ -48,9 +48,9 @@ public class SAMLHandler {
         }
     }
 
-    private final SSOConfig config;
+    private final IdPConfig config;
 
-    public SAMLHandler(SSOConfig config) {
+    public SAMLHandler(IdPConfig config) {
         this.config = config;
     }
 

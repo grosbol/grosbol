@@ -1,0 +1,208 @@
+## SSO Plugin Admin — add/edit a single IdP
+<html>
+<head>
+    <title>#if($isNew)Add Identity Provider#{else}Edit $editing.displayName#end</title>
+    $webResourceManager.requireResourcesForContext("sso-admin")
+</head>
+<body>
+<div id="sso-admin-wrapper" class="aui-page-panel">
+    <div class="aui-page-panel-inner">
+        <section class="aui-page-panel-content">
+
+            <nav class="aui-nav-breadcrumbs">
+                <ol><li><a href="$baseUrl">SSO Configuration</a></li>
+                    <li>#if($isNew)Add IdP#{else}Edit '$editing.id'#end</li></ol>
+            </nav>
+
+            <h1>#if($isNew)Add Identity Provider#{else}Edit $editing.displayName#end</h1>
+
+            <form method="POST" action="$baseUrl" id="idp-form">
+                <input type="hidden" name="action" value="save-idp" />
+
+                <!-- ── Identity ──────────────────────────────────────── -->
+                <fieldset>
+                    <legend>Identity</legend>
+                    <div class="field-group">
+                        <label for="id">IdP ID <span class="aui-icon aui-icon-required"></span></label>
+                        <input type="text" id="id" name="id" class="text"
+                               value="$!editing.id"
+                               #if(!$isNew) readonly #end
+                               placeholder="okta  (short slug, no spaces)" />
+                        <div class="description">Unique identifier used in URLs (e.g. /sso/saml/login?idp=<strong>okta</strong>). Cannot be changed after creation.</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="displayName">Display Name</label>
+                        <input type="text" id="displayName" name="displayName" class="text"
+                               value="$!editing.displayName" placeholder="Okta" />
+                        <div class="description">Shown on the IdP-picker page.</div>
+                    </div>
+                    <div class="field-group">
+                        <label for="enabled">Enabled</label>
+                        <input type="checkbox" id="enabled" name="enabled" value="true"
+                               #if($editing.enabled) checked #end />
+                    </div>
+                    <div class="field-group">
+                        <label for="protocol">Protocol</label>
+                        <select id="protocol" name="protocol" class="select">
+                            <option value="SAML" #if($editing.protocol.name() == 'SAML') selected #end>SAML 2.0</option>
+                            <option value="OIDC" #if($editing.protocol.name() == 'OIDC') selected #end>OpenID Connect / OAuth 2.0</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="domainHint">Domain Hints</label>
+                        <input type="text" id="domainHint" name="domainHint" class="text"
+                               value="$!editing.domainHint"
+                               placeholder="corp.com,corp.net" />
+                        <div class="description">
+                            Comma-separated email domains that automatically route to this IdP.
+                            e.g. <code>corp.com,corp.net</code>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- ── SAML ──────────────────────────────────────────── -->
+                <fieldset id="saml-section">
+                    <legend>SAML 2.0</legend>
+
+                    <h3>Identity Provider</h3>
+                    <div class="field-group">
+                        <label>IdP Entity ID</label>
+                        <input type="text" name="samlIdpEntityId" class="text long-field" value="$!editing.samlIdpEntityId" />
+                    </div>
+                    <div class="field-group">
+                        <label>IdP SSO URL</label>
+                        <input type="url" name="samlIdpSsoUrl" class="text long-field" value="$!editing.samlIdpSsoUrl" />
+                    </div>
+                    <div class="field-group">
+                        <label>IdP SLO URL (optional)</label>
+                        <input type="url" name="samlIdpSloUrl" class="text long-field" value="$!editing.samlIdpSloUrl" />
+                    </div>
+                    <div class="field-group">
+                        <label>IdP Certificate (PEM)</label>
+                        <textarea name="samlIdpCertificate" class="textarea" rows="5">$!editing.samlIdpCertificate</textarea>
+                    </div>
+
+                    <h3>Service Provider (this Confluence)</h3>
+                    <div class="field-group">
+                        <label>SP Entity ID</label>
+                        <input type="text" name="samlSpEntityId" class="text long-field" value="$!editing.samlSpEntityId" />
+                    </div>
+                    <div class="field-group">
+                        <label>ACS URL</label>
+                        <input type="url" name="samlSpAcsUrl" class="text long-field" value="$!editing.samlSpAcsUrl" />
+                        <div class="description">e.g. https://confluence.example.com/plugins/servlet/sso/saml/acs</div>
+                    </div>
+                    <div class="field-group">
+                        <label>SP SLO URL (optional)</label>
+                        <input type="url" name="samlSpSloUrl" class="text long-field" value="$!editing.samlSpSloUrl" />
+                    </div>
+                    <div class="field-group">
+                        <label>SP Private Key (PEM)</label>
+                        <textarea name="samlSpPrivateKey" class="textarea" rows="5">$!editing.samlSpPrivateKey</textarea>
+                    </div>
+                    <div class="field-group">
+                        <label>SP Certificate (PEM)</label>
+                        <textarea name="samlSpCertificate" class="textarea" rows="5">$!editing.samlSpCertificate</textarea>
+                    </div>
+                    <div class="field-group">
+                        <label>Sign AuthnRequests</label>
+                        <input type="checkbox" name="samlSignRequests" value="true"
+                               #if($editing.samlSignRequests) checked #end />
+                    </div>
+                    <div class="field-group">
+                        <label>Require Signed Assertions</label>
+                        <input type="checkbox" name="samlWantAssertionsSigned" value="true"
+                               #if($editing.samlWantAssertionsSigned) checked #end />
+                    </div>
+
+                    <h3>Attribute Mapping</h3>
+                    <div class="field-group">
+                        <label>Email attribute</label>
+                        <input type="text" name="samlAttributeEmail" class="text" value="$!editing.samlAttributeEmail" />
+                    </div>
+                    <div class="field-group">
+                        <label>Full name attribute</label>
+                        <input type="text" name="samlAttributeFullName" class="text" value="$!editing.samlAttributeFullName" />
+                    </div>
+                    <div class="field-group">
+                        <label>Groups attribute</label>
+                        <input type="text" name="samlAttributeGroups" class="text" value="$!editing.samlAttributeGroups" />
+                    </div>
+                </fieldset>
+
+                <!-- ── OIDC ──────────────────────────────────────────── -->
+                <fieldset id="oidc-section">
+                    <legend>OpenID Connect / OAuth 2.0</legend>
+                    <div class="field-group">
+                        <label>Issuer URL</label>
+                        <input type="url" name="oidcIssuerUrl" class="text long-field" value="$!editing.oidcIssuerUrl" />
+                    </div>
+                    <div class="field-group">
+                        <label>Client ID</label>
+                        <input type="text" name="oidcClientId" class="text" value="$!editing.oidcClientId" />
+                    </div>
+                    <div class="field-group">
+                        <label>Client Secret</label>
+                        <input type="password" name="oidcClientSecret" class="text" value="$!editing.oidcClientSecret" />
+                    </div>
+                    <div class="field-group">
+                        <label>Redirect URI</label>
+                        <input type="url" name="oidcRedirectUri" class="text long-field" value="$!editing.oidcRedirectUri" />
+                        <div class="description">e.g. https://confluence.example.com/plugins/servlet/sso/oidc/callback</div>
+                    </div>
+                    <div class="field-group">
+                        <label>Scopes</label>
+                        <input type="text" name="oidcScopes" class="text" value="$!editing.oidcScopes" />
+                    </div>
+                    <div class="field-group">
+                        <label>Enable PKCE</label>
+                        <input type="checkbox" name="oidcPkceEnabled" value="true"
+                               #if($editing.oidcPkceEnabled) checked #end />
+                    </div>
+                    <h3>Claim Mapping</h3>
+                    <div class="field-group">
+                        <label>Email claim</label>
+                        <input type="text" name="oidcClaimEmail" class="text" value="$!editing.oidcClaimEmail" />
+                    </div>
+                    <div class="field-group">
+                        <label>Full name claim</label>
+                        <input type="text" name="oidcClaimFullName" class="text" value="$!editing.oidcClaimFullName" />
+                    </div>
+                    <div class="field-group">
+                        <label>Groups claim</label>
+                        <input type="text" name="oidcClaimGroups" class="text" value="$!editing.oidcClaimGroups" />
+                    </div>
+                </fieldset>
+
+                <div class="buttons-container">
+                    <input type="submit" class="aui-button aui-button-primary"
+                           value="#if($isNew)Add Identity Provider#{else}Save Changes#end" />
+                    <a href="$baseUrl" class="aui-button aui-button-subtle">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+<script>
+(function () {
+    var proto = document.getElementById('protocol');
+    var saml  = document.getElementById('saml-section');
+    var oidc  = document.getElementById('oidc-section');
+    function toggle() {
+        saml.style.display = proto.value === 'SAML' ? '' : 'none';
+        oidc.style.display = proto.value === 'OIDC' ? '' : 'none';
+    }
+    proto.addEventListener('change', toggle);
+    toggle();
+
+    // Normalise checkbox values on submit
+    document.getElementById('idp-form').addEventListener('submit', function () {
+        ['enabled','samlSignRequests','samlWantAssertionsSigned','oidcPkceEnabled'].forEach(function (id) {
+            var el = document.getElementById(id) || document.querySelector('[name="' + id + '"]');
+            if (el && el.type === 'checkbox') el.value = el.checked ? 'true' : 'false';
+        });
+    });
+}());
+</script>
+</body>
+</html>

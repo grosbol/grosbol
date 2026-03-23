@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,23 +27,21 @@ class SSOConfigManagerTest {
     @BeforeEach
     void setUp() {
         when(factory.createGlobalSettings()).thenReturn(settings);
-
-        // Simulate in-memory store
-        doAnswer(inv -> store.get(inv.getArgument(0)))
-            .when(settings).get(anyString());
+        doAnswer(inv -> store.get(inv.getArgument(0))).when(settings).get(anyString());
         doAnswer(inv -> { store.put(inv.getArgument(0), inv.getArgument(1)); return null; })
             .when(settings).put(anyString(), anyString());
-
         manager = new SSOConfigManager(factory);
     }
 
     @Test
-    void defaultsAreReturnedWhenNothingStored() {
+    void defaultsWhenNothingStored() {
         SSOConfig cfg = manager.load();
         assertFalse(cfg.isEnabled());
-        assertEquals(SSOConfig.Protocol.SAML, cfg.getProtocol());
-        assertEquals("email", cfg.getSamlAttributeEmail());
+        assertFalse(cfg.isForceSSO());
+        assertEquals("/", cfg.getDefaultRedirectPath());
         assertTrue(cfg.isAutoProvisionUsers());
+        assertFalse(cfg.isSyncGroupMembership());
+        assertEquals("confluence-users", cfg.getDefaultGroup());
     }
 
     @Test
@@ -51,12 +49,10 @@ class SSOConfigManagerTest {
         SSOConfig original = SSOConfig.builder()
             .enabled(true)
             .forceSSO(true)
-            .protocol(SSOConfig.Protocol.OIDC)
-            .oidcIssuerUrl("https://accounts.google.com")
-            .oidcClientId("my-client")
-            .oidcClientSecret("s3cr3t")
-            .oidcRedirectUri("https://confluence.example.com/plugins/servlet/sso/oidc/callback")
-            .defaultGroup("my-group")
+            .defaultRedirectPath("/dashboard")
+            .autoProvisionUsers(false)
+            .syncGroupMembership(true)
+            .defaultGroup("sso-users")
             .build();
 
         manager.save(original);
@@ -64,39 +60,9 @@ class SSOConfigManagerTest {
 
         assertTrue(loaded.isEnabled());
         assertTrue(loaded.isForceSSO());
-        assertEquals(SSOConfig.Protocol.OIDC, loaded.getProtocol());
-        assertEquals("https://accounts.google.com", loaded.getOidcIssuerUrl());
-        assertEquals("my-client",  loaded.getOidcClientId());
-        assertEquals("my-group",   loaded.getDefaultGroup());
-    }
-
-    @Test
-    void invalidProtocolDefaultsToSAML() {
-        store.put("com.example.confluence.sso.protocol", "INVALID");
-        SSOConfig cfg = manager.load();
-        assertEquals(SSOConfig.Protocol.SAML, cfg.getProtocol());
-    }
-
-    @Test
-    void samlConfigRoundTrip() {
-        SSOConfig original = SSOConfig.builder()
-            .protocol(SSOConfig.Protocol.SAML)
-            .enabled(true)
-            .samlIdpEntityId("https://idp.example.com")
-            .samlIdpSsoUrl("https://idp.example.com/sso")
-            .samlIdpCertificate("-----BEGIN CERTIFICATE-----\nMIIC...")
-            .samlSpEntityId("https://confluence.example.com")
-            .samlSpAcsUrl("https://confluence.example.com/plugins/servlet/sso/saml/acs")
-            .samlSignRequests(true)
-            .samlWantAssertionsSigned(true)
-            .build();
-
-        manager.save(original);
-        SSOConfig loaded = manager.load();
-
-        assertEquals("https://idp.example.com", loaded.getSamlIdpEntityId());
-        assertEquals("https://idp.example.com/sso", loaded.getSamlIdpSsoUrl());
-        assertTrue(loaded.isSamlSignRequests());
-        assertTrue(loaded.isSamlWantAssertionsSigned());
+        assertEquals("/dashboard", loaded.getDefaultRedirectPath());
+        assertFalse(loaded.isAutoProvisionUsers());
+        assertTrue(loaded.isSyncGroupMembership());
+        assertEquals("sso-users", loaded.getDefaultGroup());
     }
 }

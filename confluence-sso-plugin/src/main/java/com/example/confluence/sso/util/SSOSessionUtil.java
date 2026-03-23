@@ -28,6 +28,9 @@ public final class SSOSessionUtil {
     /** The SAML session index, used for SLO. */
     public static final String ATTR_SAML_SESSION_INDEX = "sso.saml.sessionIndex";
 
+    /** The IdP id that initiated the current SSO flow. */
+    public static final String ATTR_IDP_ID = "sso.idpId";
+
     // ── Setters ────────────────────────────────────────────────────────────────
 
     public static void setSSOUser(HttpServletRequest req, String username) {
@@ -48,6 +51,10 @@ public final class SSOSessionUtil {
 
     public static void setSamlSessionIndex(HttpServletRequest req, String sessionIndex) {
         req.getSession(true).setAttribute(ATTR_SAML_SESSION_INDEX, sessionIndex);
+    }
+
+    public static void setIdPId(HttpServletRequest req, String idpId) {
+        req.getSession(true).setAttribute(ATTR_IDP_ID, idpId);
     }
 
     // ── Getters ────────────────────────────────────────────────────────────────
@@ -77,6 +84,11 @@ public final class SSOSessionUtil {
         return session != null ? (String) session.getAttribute(ATTR_SAML_SESSION_INDEX) : null;
     }
 
+    public static String getIdPId(HttpServletRequest req) {
+        HttpSession session = req.getSession(false);
+        return session != null ? (String) session.getAttribute(ATTR_IDP_ID) : null;
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     public static boolean isAuthenticated(HttpServletRequest req) {
@@ -92,6 +104,7 @@ public final class SSOSessionUtil {
             session.removeAttribute(ATTR_RETURN_TO);
             session.removeAttribute(ATTR_SAML_NAME_ID);
             session.removeAttribute(ATTR_SAML_SESSION_INDEX);
+            session.removeAttribute(ATTR_IDP_ID);
         }
     }
 

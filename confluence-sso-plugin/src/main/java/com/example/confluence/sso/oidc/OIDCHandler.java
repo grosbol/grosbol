@@ -1,6 +1,6 @@
 package com.example.confluence.sso.oidc;
 
-import com.example.confluence.sso.config.SSOConfig;
+import com.example.confluence.sso.config.IdPConfig;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
@@ -34,13 +34,13 @@ public class OIDCHandler {
 
     private static final Logger log = LoggerFactory.getLogger(OIDCHandler.class);
 
-    private final SSOConfig config;
+    private final IdPConfig config;
     private volatile OIDCProviderMetadata providerMetadata;
 
     /** In-flight state → PKCE verifier mapping. In a cluster, use a distributed store. */
     private final Map<String, String> pendingStates = new ConcurrentHashMap<>();
 
-    public OIDCHandler(SSOConfig config) {
+    public OIDCHandler(IdPConfig config) {
         this.config = config;
     }
 

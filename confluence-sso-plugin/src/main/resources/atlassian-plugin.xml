@@ -68,6 +68,13 @@
         <url-pattern>/sso/oidc/callback</url-pattern>
     </servlet>
 
+    <!-- ── IdP Picker ────────────────────────────────────────────────────── -->
+    <servlet name="SSO IdP Picker"
+             key="sso-idp-picker"
+             class="com.example.confluence.sso.servlet.IdPPickerServlet">
+        <url-pattern>/sso/pick</url-pattern>
+    </servlet>
+
     <!-- ── Logout ─────────────────────────────────────────────────────────── -->
     <servlet name="SSO Logout"
              key="sso-logout"

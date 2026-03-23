@@ -40,6 +40,7 @@ public class SSOFilter implements Filter {
         "/plugins/servlet/sso/oidc/callback",
         "/plugins/servlet/sso/logout",
         "/plugins/servlet/sso/admin",
+        "/plugins/servlet/sso/pick",
         "/login.action",
         "/dologin.action"
     );

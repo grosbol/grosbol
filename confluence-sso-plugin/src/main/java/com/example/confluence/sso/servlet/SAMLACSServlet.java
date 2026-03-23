@@ -1,5 +1,7 @@
 package com.example.confluence.sso.servlet;
 
+import com.example.confluence.sso.config.IdPConfig;
+import com.example.confluence.sso.config.IdPSelector;
 import com.example.confluence.sso.config.SSOConfig;
 import com.example.confluence.sso.config.SSOConfigManager;
 import com.example.confluence.sso.saml.SAMLException;
@@ -7,7 +9,6 @@ import com.example.confluence.sso.saml.SAMLHandler;
 import com.example.confluence.sso.saml.SAMLUserInfo;
 import com.example.confluence.sso.util.SSOSessionUtil;
 import com.example.confluence.sso.util.UserProvisioningService;
-import com.atlassian.confluence.user.UserAccessor;
 import com.atlassian.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * SAML 2.0 Assertion Consumer Service (ACS).
+ * SAML 2.0 Assertion Consumer Service.
  *
- * Receives the HTTP-POST response from the IdP, validates the assertion,
- * provisions the user if needed, and establishes the Confluence session.
+ * The IdP that initiated the flow is identified via the session attribute
+ * set by {@link SAMLLoginServlet} (key {@code sso.idpId}).
+ * This avoids any ambiguity when multiple IdPs share the same ACS URL.
  *
  * URL: {@code /plugins/servlet/sso/saml/acs}
  */
@@ -30,23 +32,22 @@ public class SAMLACSServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(SAMLACSServlet.class);
 
     private final SSOConfigManager       configManager;
+    private final IdPSelector            idpSelector;
     private final UserProvisioningService provisioningService;
 
     public SAMLACSServlet(SSOConfigManager configManager,
+                          IdPSelector idpSelector,
                           UserProvisioningService provisioningService) {
         this.configManager       = configManager;
+        this.idpSelector         = idpSelector;
         this.provisioningService = provisioningService;
     }
 
-    /**
-     * IdP posts the SAMLResponse here.
-     */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        SSOConfig config = configManager.load();
-
-        if (!config.isEnabled() || config.getProtocol() != SSOConfig.Protocol.SAML) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND, "SAML SSO is not enabled.");
+        SSOConfig global = configManager.load();
+        if (!global.isEnabled()) {
+            res.sendError(HttpServletResponse.SC_NOT_FOUND, "SSO is not enabled.");
             return;
         }
 
@@ -54,12 +55,11 @@ public class SAMLACSServlet extends HttpServlet {
         String relayState   = req.getParameter("RelayState");
 
         if (samlResponse == null || samlResponse.isBlank()) {
-            log.warn("ACS received request with no SAMLResponse parameter.");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing SAMLResponse.");
             return;
         }
 
-        // Validate relay state to prevent CSRF
+        // Validate relay state
         String expectedState = SSOSessionUtil.getState(req);
         if (expectedState != null && !expectedState.equals(relayState)) {
             log.warn("SAML relay state mismatch (expected={}, got={})", expectedState, relayState);
@@ -67,40 +67,43 @@ public class SAMLACSServlet extends HttpServlet {
             return;
         }
 
+        // Identify which IdP we are talking to
+        String idpId = SSOSessionUtil.getIdPId(req);
+        IdPConfig idp = idpId != null ? idpSelector.resolveById(idpId) : null;
+        if (idp == null) {
+            log.error("ACS: no IdP ID in session — cannot validate assertion.");
+            res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown IdP for this SSO session.");
+            return;
+        }
+
         try {
-            SAMLHandler   handler  = new SAMLHandler(config);
-            SAMLUserInfo  userInfo = handler.parseAndValidateResponse(samlResponse);
+            SAMLUserInfo userInfo = new SAMLHandler(idp).parseAndValidateResponse(samlResponse);
+            log.info("SAML assertion validated via IdP '{}' for: {}", idp.getId(), userInfo);
 
-            log.info("SAML assertion validated for: {}", userInfo);
-
-            // Find or provision the Confluence user
             User user = provisioningService.findOrProvision(
-                userInfo.toUsername(),
-                userInfo.getEmail(),
-                userInfo.getFullName(),
-                userInfo.getGroups(),
-                config);
+                userInfo.toUsername(), userInfo.getEmail(),
+                userInfo.getFullName(), userInfo.getGroups(), global);
 
             if (user == null) {
-                log.error("Cannot resolve Confluence user for SSO identity: {}", userInfo.getNameId());
+                log.error("Cannot resolve Confluence user for IdP '{}' identity: {}", idp.getId(), userInfo.getNameId());
                 res.sendRedirect("/login.action?permissionViolation=true");
                 return;
             }
 
-            // Store SSO session attributes
             SSOSessionUtil.setSSOUser(req, user.getName());
             SSOSessionUtil.setSamlNameId(req, userInfo.getNameId());
             SSOSessionUtil.setSamlSessionIndex(req, userInfo.getSessionIndex());
 
-            String returnTo = SSOSessionUtil.consumeReturnTo(req, config.getDefaultRedirectPath());
-            log.debug("SAML login success for '{}', redirecting to '{}'", user.getName(), returnTo);
+            String returnTo = SSOSessionUtil.consumeReturnTo(req, global.getDefaultRedirectPath());
+            log.debug("SAML login success for '{}' via IdP '{}', → '{}'",
+                user.getName(), idp.getId(), returnTo);
             res.sendRedirect(returnTo);
 
         } catch (SAMLException e) {
-            log.error("SAML response validation failed: {}", e.getMessage(), e);
-            res.sendRedirect("/login.action?os_destination=%2F&permissionViolation=true");
+            log.error("SAML validation failed for IdP '{}': {}", idp.getId(), e.getMessage(), e);
+            res.sendRedirect("/login.action?permissionViolation=true");
         } catch (Exception e) {
-            log.error("Unexpected error processing SAML ACS", e);
+            log.error("Unexpected error in SAML ACS for IdP '{}'", idp.getId(), e);
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "SSO error: " + e.getMessage());
         }
     }
