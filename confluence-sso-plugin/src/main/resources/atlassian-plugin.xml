@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atlassian-plugin key="com.example.confluence.confluence-sso-plugin"
+                  name="Confluence SSO Plugin"
+                  pluginsVersion="2">
+
+    <plugin-info>
+        <description>Single Sign-On for Confluence 9.2 — SAML 2.0 and OpenID Connect</description>
+        <version>1.0.0</version>
+        <vendor name="Example Corp" url="https://example.com"/>
+        <param name="plugin-icon">images/sso-icon.png</param>
+        <param name="atlassian-data-center-compatible">true</param>
+        <param name="atlassian-data-center-status">compatible</param>
+    </plugin-info>
+
+    <!-- ── i18n ──────────────────────────────────────────────────────────── -->
+    <resource type="i18n" name="i18n" location="i18n/sso-plugin"/>
+
+    <!-- ── Servlet Filter: intercepts every request for SSO token check ──── -->
+    <servlet-filter name="SSO Authentication Filter"
+                    key="sso-auth-filter"
+                    class="com.example.confluence.sso.auth.SSOFilter"
+                    location="before-decoration"
+                    weight="100">
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <init-param>
+            <param-name>loginURL</param-name>
+            <param-value>/plugins/servlet/sso/login</param-value>
+        </init-param>
+    </servlet-filter>
+
+    <!-- ── SAML 2.0 endpoints ────────────────────────────────────────────── -->
+    <servlet name="SSO SAML Login"
+             key="sso-saml-login"
+             class="com.example.confluence.sso.servlet.SAMLLoginServlet">
+        <url-pattern>/sso/saml/login</url-pattern>
+    </servlet>
+
+    <servlet name="SSO SAML Assertion Consumer Service"
+             key="sso-saml-acs"
+             class="com.example.confluence.sso.servlet.SAMLACSServlet">
+        <url-pattern>/sso/saml/acs</url-pattern>
+    </servlet>
+
+    <servlet name="SSO SAML SP Metadata"
+             key="sso-saml-metadata"
+             class="com.example.confluence.sso.servlet.SAMLMetadataServlet">
+        <url-pattern>/sso/saml/metadata</url-pattern>
+    </servlet>
+
+    <servlet name="SSO SAML SLO"
+             key="sso-saml-slo"
+             class="com.example.confluence.sso.servlet.SAMLSLOServlet">
+        <url-pattern>/sso/saml/slo</url-pattern>
+    </servlet>
+
+    <!-- ── OIDC endpoints ────────────────────────────────────────────────── -->
+    <servlet name="SSO OIDC Login"
+             key="sso-oidc-login"
+             class="com.example.confluence.sso.servlet.OIDCLoginServlet">
+        <url-pattern>/sso/oidc/login</url-pattern>
+    </servlet>
+
+    <servlet name="SSO OIDC Callback"
+             key="sso-oidc-callback"
+             class="com.example.confluence.sso.servlet.OIDCCallbackServlet">
+        <url-pattern>/sso/oidc/callback</url-pattern>
+    </servlet>
+
+    <!-- ── Logout ─────────────────────────────────────────────────────────── -->
+    <servlet name="SSO Logout"
+             key="sso-logout"
+             class="com.example.confluence.sso.servlet.SSOLogoutServlet">
+        <url-pattern>/sso/logout</url-pattern>
+    </servlet>
+
+    <!-- ── Admin configuration page ─────────────────────────────────────── -->
+    <servlet name="SSO Admin Configuration"
+             key="sso-admin"
+             class="com.example.confluence.sso.servlet.SSOAdminServlet">
+        <url-pattern>/sso/admin</url-pattern>
+    </servlet>
+
+    <web-item name="SSO Configuration"
+              key="sso-admin-link"
+              section="system.admin/configuration"
+              weight="200">
+        <label key="sso.admin.link.label"/>
+        <link linkId="sso-admin-link">/plugins/servlet/sso/admin</link>
+    </web-item>
+
+    <!-- ── Web resources (CSS / JS for admin page) ───────────────────────── -->
+    <web-resource name="SSO Admin Resources"
+                  key="sso-admin-resources">
+        <resource type="download" name="sso-admin.css" location="css/sso-admin.css"/>
+        <resource type="download" name="sso-admin.js"  location="js/sso-admin.js"/>
+        <context>sso-admin</context>
+    </web-resource>
+
+</atlassian-plugin>

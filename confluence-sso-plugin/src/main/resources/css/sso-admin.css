@@ -1,0 +1,58 @@
+/* SSO Plugin Admin Styles */
+
+#sso-admin-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#sso-admin-wrapper fieldset {
+    border: 1px solid #DFE1E6;
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+#sso-admin-wrapper legend {
+    font-weight: bold;
+    font-size: 1.1em;
+    padding: 0 8px;
+    color: #172B4D;
+}
+
+#sso-admin-wrapper h3 {
+    color: #344563;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #EBECF0;
+    padding-bottom: 4px;
+}
+
+#sso-admin-wrapper .field-group {
+    margin-bottom: 14px;
+}
+
+#sso-admin-wrapper .long-field {
+    width: 100%;
+    max-width: 600px;
+}
+
+#sso-admin-wrapper textarea.textarea {
+    width: 100%;
+    max-width: 600px;
+    font-family: monospace;
+    font-size: 0.85em;
+}
+
+#sso-admin-wrapper .description {
+    color: #6B778C;
+    font-size: 0.85em;
+    margin-top: 4px;
+}
+
+#sso-admin-wrapper .buttons-container {
+    margin-top: 24px;
+}
