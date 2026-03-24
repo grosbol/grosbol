@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SSO Plugin — Configuration Screens</title>
+<style>
+  /* ── Reset / Base ─────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         font-size: 14px; color: #172B4D; background: #F4F5F7; }
+
+  /* ── Screen switcher tabs ─────────────────────────────────────── */
+  #screen-tabs { display: flex; gap: 0; background: #0052CC; padding: 0 24px; }
+  #screen-tabs button {
+    background: none; border: none; color: rgba(255,255,255,0.7);
+    padding: 12px 20px; cursor: pointer; font-size: 13px; font-weight: 500;
+    border-bottom: 3px solid transparent; transition: all .15s;
+  }
+  #screen-tabs button.active { color: #fff; border-bottom-color: #fff; }
+  #screen-tabs button:hover  { color: #fff; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Confluence-style chrome ──────────────────────────────────── */
+  .page-header {
+    background: #fff;
+    border-bottom: 1px solid #DFE1E6;
+    padding: 20px 32px 0;
+  }
+  .page-header .breadcrumb { font-size: 12px; color: #6B778C; margin-bottom: 8px; }
+  .page-header .breadcrumb a { color: #0052CC; text-decoration: none; }
+  .page-header h1 { font-size: 24px; font-weight: 600; color: #172B4D; padding-bottom: 20px; }
+
+  .page-body { padding: 24px 32px; max-width: 960px; }
+
+  /* ── Cards / fieldsets ────────────────────────────────────────── */
+  .card {
+    background: #fff;
+    border: 1px solid #DFE1E6;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #DFE1E6;
+  }
+  .card-header h2 { font-size: 16px; font-weight: 600; color: #172B4D; }
+  .card-body { padding: 20px; }
+
+  /* ── Form elements ────────────────────────────────────────────── */
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block; font-weight: 600; font-size: 12px;
+    color: #344563; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .field-group .hint { font-size: 11px; color: #6B778C; margin-top: 4px; }
+
+  input[type=text], input[type=url], input[type=email],
+  input[type=password], select, textarea {
+    width: 100%; padding: 8px 10px;
+    border: 2px solid #DFE1E6; border-radius: 3px;
+    font-size: 14px; color: #172B4D; background: #FAFBFC;
+    transition: border-color .15s;
+    outline: none;
+  }
+  input[type=text]:focus, input[type=url]:focus,
+  input[type=email]:focus, input[type=password]:focus,
+  select:focus, textarea:focus { border-color: #0052CC; background: #fff; }
+
+  input[type=text].short { max-width: 220px; }
+  input[type=text].medium, input[type=url].medium { max-width: 420px; }
+  textarea { font-family: monospace; font-size: 12px; resize: vertical; }
+
+  .toggle-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .toggle-row label { font-size: 14px; color: #172B4D; font-weight: 400; cursor: pointer; }
+  .toggle-row .hint { font-size: 11px; color: #6B778C; }
+
+  /* Toggle switch */
+  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider {
+    position: absolute; inset: 0;
+    background: #DFE1E6; border-radius: 20px; cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle .slider::before {
+    content: ""; position: absolute;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; left: 3px; top: 3px;
+    transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .slider { background: #0052CC; }
+  .toggle input:checked + .slider::before { transform: translateX(16px); }
+
+  /* ── Buttons ──────────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 3px; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; text-decoration: none; transition: all .15s;
+  }
+  .btn-primary   { background: #0052CC; color: #fff; }
+  .btn-primary:hover { background: #0747A6; }
+  .btn-default   { background: #fff; color: #344563; border: 1px solid #DFE1E6; }
+  .btn-default:hover { background: #F4F5F7; }
+  .btn-danger    { background: #fff; color: #DE350B; border: 1px solid #DFE1E6; }
+  .btn-danger:hover { background: #FFEBE6; border-color: #DE350B; }
+  .btn-subtle    { background: none; color: #0052CC; border: none; padding: 6px 10px; }
+  .btn-subtle:hover { background: #EAF0FB; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ── Table ────────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #F4F5F7; }
+  th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; font-weight: 700; color: #6B778C;
+    text-transform: uppercase; letter-spacing: .06em;
+    border-bottom: 2px solid #DFE1E6;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid #F4F5F7; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFBFC; }
+
+  /* ── Lozenges / badges ────────────────────────────────────────── */
+  .lozenge {
+    display: inline-block; padding: 2px 8px; border-radius: 3px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  }
+  .lozenge-success { background: #E3FCEF; color: #006644; }
+  .lozenge-default { background: #DFE1E6; color: #5E6C84; }
+  .lozenge-saml    { background: #DEEBFF; color: #0747A6; }
+  .lozenge-oidc    { background: #EAE6FF; color: #403294; }
+
+  /* ── Messages ─────────────────────────────────────────────────── */
+  .message {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .message-success { background: #E3FCEF; border: 1px solid #ABF5D1; color: #006644; }
+  .message-info    { background: #DEEBFF; border: 1px solid #B3D4FF; color: #0747A6; }
+  .message-warning { background: #FFFAE6; border: 1px solid #FFE380; color: #172B4D; }
+  .message svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Section dividers ─────────────────────────────────────────── */
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: #6B778C;
+    padding: 0 0 8px; margin: 20px 0 12px;
+    border-bottom: 1px solid #EBECF0;
+  }
+
+  /* ── 2-col form grid ──────────────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .form-grid .full { grid-column: 1/-1; }
+
+  /* ── Protocol tabs (inside IdP form) ─────────────────────────── */
+  .proto-tabs { display: flex; gap: 0; border-bottom: 2px solid #DFE1E6; margin-bottom: 20px; }
+  .proto-tab {
+    padding: 10px 20px; cursor: pointer; font-weight: 500;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    color: #6B778C; transition: all .15s;
+  }
+  .proto-tab.active { color: #0052CC; border-bottom-color: #0052CC; }
+
+  /* ── IdP picker page ──────────────────────────────────────────── */
+  .picker-wrapper {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #F4F5F7;
+  }
+  .picker-card {
+    background: #fff; border-radius: 8px; padding: 40px;
+    width: 100%; max-width: 440px; box-shadow: 0 4px 20px rgba(0,0,0,.1);
+  }
+  .picker-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 28px; color: #172B4D; }
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    color: #6B778C; font-size: 12px; margin: 20px 0;
+  }
+  .divider::before, .divider::after {
+    content: ""; flex: 1; height: 1px; background: #DFE1E6;
+  }
+  .idp-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 14px 16px; margin-bottom: 10px;
+    border: 1.5px solid #DFE1E6; border-radius: 6px;
+    background: #fff; cursor: pointer; transition: all .15s;
+  }
+  .idp-btn:hover { border-color: #0052CC; background: #EAF0FB; }
+  .idp-btn .idp-name { font-weight: 600; font-size: 14px; color: #172B4D; }
+  .idp-btn .idp-domain { font-size: 11px; color: #6B778C; margin-top: 2px; }
+  .idp-btn svg { color: #6B778C; }
+
+  /* ── Metadata link ────────────────────────────────────────────── */
+  .metadata-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #0052CC; text-decoration: none;
+    padding: 4px 8px; border: 1px solid #B3D4FF; border-radius: 3px; background: #DEEBFF;
+  }
+
+  code { background: #F4F5F7; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+  .action-row { display: flex; gap: 6px; align-items: center; }
+
+  /* ── Readonly badge ───────────────────────────────────────────── */
+  .field-readonly {
+    padding: 8px 10px; background: #F4F5F7; border: 2px solid #DFE1E6;
+    border-radius: 3px; font-family: monospace; font-size: 13px; color: #344563;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN SWITCHER
+════════════════════════════════════════════════════════════════ -->
+<div id="screen-tabs">
+  <button class="active" onclick="show('s1',this)">① Admin — IdP List</button>
+  <button onclick="show('s2',this)">② Admin — Add / Edit IdP</button>
+  <button onclick="show('s3',this)">③ IdP Picker (login page)</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 1 — IdP List + Global Settings
+════════════════════════════════════════════════════════════════ -->
+<div id="s1" class="screen active">
+
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="#">Confluence Administration</a> › SSO Configuration
+    </div>
+    <h1>Single Sign-On (SSO) Configuration</h1>
+  </div>
+
+  <div class="page-body">
+
+    <!-- Success message -->
+    <div class="message message-success">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Global settings saved successfully.
+    </div>
+
+    <!-- ── Global Settings ─────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Global Settings</h2>
+      </div>
+      <div class="card-body">
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+          <div>
+            <label>Enable SSO</label>
+            <div class="hint">Master switch — disabling this bypasses all SSO logic.</div>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+          <div>
+            <label>Force SSO</label>
+            <div class="hint">Redirect all unauthenticated requests to SSO. Shows the IdP picker if multiple providers are configured.</div>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-top:16px;">
+          <div class="field-group">
+            <label>Default Redirect Path</label>
+            <input type="text" class="short" value="/" />
+            <div class="hint">Where to land after a successful login.</div>
+          </div>
+          <div class="field-group">
+            <label>Default Group</label>
+            <input type="text" class="short" value="confluence-users" />
+            <div class="hint">Every SSO user is added to this group.</div>
+          </div>
+        </div>
+
+        <div class="toggle-row" style="margin-top:4px;">
+          <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+          <div>
+            <label>Auto-provision new users</label>
+            <div class="hint">Create a Confluence account on first SSO login.</div>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <label class="toggle"><input type="checkbox"/><span class="slider"></span></label>
+          <div>
+            <label>Sync group membership</label>
+            <div class="hint">Add users to Confluence groups matching IdP group claims.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary">Save Global Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Identity Providers table ───────────────────────────── -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Identity Providers</h2>
+        <button class="btn btn-primary btn-sm" onclick="show('s2',document.querySelectorAll('#screen-tabs button')[1])">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Add Identity Provider
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Display Name</th>
+            <th>Protocol</th>
+            <th>Domain Hints</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- IdP 1 -->
+          <tr>
+            <td><code>okta</code></td>
+            <td><strong>Okta — Corporate</strong></td>
+            <td><span class="lozenge lozenge-oidc">OIDC</span></td>
+            <td><code>corp.com, corp.net</code></td>
+            <td><span class="lozenge lozenge-success">Enabled</span></td>
+            <td>
+              <div class="action-row">
+                <button class="btn btn-default btn-sm"
+                        onclick="show('s2',document.querySelectorAll('#screen-tabs button')[1])">Edit</button>
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </div>
+            </td>
+          </tr>
+          <!-- IdP 2 -->
+          <tr>
+            <td><code>azure</code></td>
+            <td><strong>Azure AD — Partners</strong></td>
+            <td><span class="lozenge lozenge-saml">SAML</span></td>
+            <td><code>partner.com</code></td>
+            <td><span class="lozenge lozenge-success">Enabled</span></td>
+            <td>
+              <div class="action-row">
+                <button class="btn btn-default btn-sm">Edit</button>
+                <a href="#" class="metadata-link">
+                  <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                  </svg>
+                  SP Metadata
+                </a>
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </div>
+            </td>
+          </tr>
+          <!-- IdP 3 -->
+          <tr>
+            <td><code>adfs-legacy</code></td>
+            <td><strong>ADFS (Legacy)</strong></td>
+            <td><span class="lozenge lozenge-saml">SAML</span></td>
+            <td><span style="color:#97A0AF;">—</span></td>
+            <td><span class="lozenge lozenge-default">Disabled</span></td>
+            <td>
+              <div class="action-row">
+                <button class="btn btn-default btn-sm">Edit</button>
+                <a href="#" class="metadata-link">
+                  <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                  </svg>
+                  SP Metadata
+                </a>
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /page-body -->
+</div><!-- /screen 1 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 2 — Add / Edit IdP
+════════════════════════════════════════════════════════════════ -->
+<div id="s2" class="screen">
+
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="#" onclick="show('s1',document.querySelectorAll('#screen-tabs button')[0]);return false;">
+        Confluence Administration</a> ›
+      <a href="#" onclick="show('s1',document.querySelectorAll('#screen-tabs button')[0]);return false;">
+        SSO Configuration</a> ›
+      Add Identity Provider
+    </div>
+    <h1>Add Identity Provider</h1>
+  </div>
+
+  <div class="page-body">
+    <div class="card">
+      <div class="card-body">
+
+        <!-- ── Identity section ──────────────────────────────── -->
+        <div class="section-title">Identity</div>
+        <div class="form-grid">
+          <div class="field-group">
+            <label>IdP ID <span style="color:#DE350B">*</span></label>
+            <input type="text" class="short" placeholder="okta" value="okta" />
+            <div class="hint">Short slug used in URLs — e.g. <code>?idp=okta</code>. Cannot be changed after creation.</div>
+          </div>
+          <div class="field-group">
+            <label>Display Name</label>
+            <input type="text" placeholder="Okta — Corporate" value="Okta — Corporate" />
+            <div class="hint">Shown on the IdP-picker page.</div>
+          </div>
+          <div class="field-group">
+            <label>Protocol</label>
+            <select id="proto-select" onchange="switchProto()">
+              <option value="oidc">OpenID Connect / OAuth 2.0</option>
+              <option value="saml">SAML 2.0</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Domain Hints</label>
+            <input type="text" placeholder="corp.com, corp.net" value="corp.com, corp.net" />
+            <div class="hint">Comma-separated email domains that auto-route to this IdP.</div>
+          </div>
+          <div class="field-group full">
+            <div class="toggle-row">
+              <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+              <label>Enabled</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Protocol-specific sections ───────────────────── -->
+        <div class="section-title" style="margin-top:8px;">Provider Settings</div>
+        <div class="proto-tabs">
+          <div class="proto-tab active" id="tab-oidc" onclick="switchProto('oidc')">OpenID Connect</div>
+          <div class="proto-tab"        id="tab-saml" onclick="switchProto('saml')">SAML 2.0</div>
+        </div>
+
+        <!-- OIDC fields -->
+        <div id="fields-oidc">
+          <div class="form-grid">
+            <div class="field-group full">
+              <label>Issuer URL</label>
+              <input type="url" value="https://dev-12345.okta.com" />
+              <div class="hint">Discovery endpoint base URL. The plugin fetches <code>/.well-known/openid-configuration</code> automatically.</div>
+            </div>
+            <div class="field-group">
+              <label>Client ID</label>
+              <input type="text" value="0oa3abc123def456gh" />
+            </div>
+            <div class="field-group">
+              <label>Client Secret</label>
+              <input type="password" value="••••••••••••••••••••" />
+            </div>
+            <div class="field-group full">
+              <label>Redirect URI</label>
+              <input type="url" value="https://confluence.example.com/plugins/servlet/sso/oidc/callback" />
+              <div class="hint">Register this exact URL in your IdP application settings.</div>
+            </div>
+            <div class="field-group">
+              <label>Scopes</label>
+              <input type="text" value="openid profile email groups" />
+            </div>
+            <div class="field-group">
+              <label>JWKS URI override <span style="color:#6B778C;font-weight:400;">(optional)</span></label>
+              <input type="url" placeholder="Leave blank to use discovery" />
+            </div>
+            <div class="field-group full">
+              <div class="toggle-row">
+                <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+                <div>
+                  <label>Enable PKCE (S256)</label>
+                  <div class="hint">Recommended for all modern IdPs.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">Claim Mapping</div>
+          <div class="form-grid">
+            <div class="field-group">
+              <label>Email claim</label>
+              <input type="text" class="short" value="email" />
+            </div>
+            <div class="field-group">
+              <label>Full name claim</label>
+              <input type="text" class="short" value="name" />
+            </div>
+            <div class="field-group">
+              <label>Groups claim</label>
+              <input type="text" class="short" value="groups" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SAML fields -->
+        <div id="fields-saml" style="display:none;">
+          <div class="section-title">Identity Provider</div>
+          <div class="form-grid">
+            <div class="field-group full">
+              <label>IdP Entity ID</label>
+              <input type="url" placeholder="https://idp.example.com" />
+            </div>
+            <div class="field-group">
+              <label>IdP SSO URL</label>
+              <input type="url" placeholder="https://idp.example.com/sso/saml" />
+            </div>
+            <div class="field-group">
+              <label>IdP SLO URL <span style="color:#6B778C;font-weight:400;">(optional)</span></label>
+              <input type="url" placeholder="https://idp.example.com/slo" />
+            </div>
+            <div class="field-group full">
+              <label>IdP X.509 Certificate (PEM)</label>
+              <textarea rows="5" placeholder="-----BEGIN CERTIFICATE-----&#10;MIICxxx...&#10;-----END CERTIFICATE-----"></textarea>
+            </div>
+          </div>
+
+          <div class="section-title">Service Provider (this Confluence)</div>
+          <div class="form-grid">
+            <div class="field-group full">
+              <label>SP Entity ID</label>
+              <input type="url" placeholder="https://confluence.example.com" />
+            </div>
+            <div class="field-group full">
+              <label>ACS URL</label>
+              <input type="url" placeholder="https://confluence.example.com/plugins/servlet/sso/saml/acs" />
+            </div>
+            <div class="field-group full">
+              <label>SP SLO URL <span style="color:#6B778C;font-weight:400;">(optional)</span></label>
+              <input type="url" placeholder="https://confluence.example.com/plugins/servlet/sso/saml/slo" />
+            </div>
+            <div class="field-group">
+              <label>SP Private Key (PEM)</label>
+              <textarea rows="4" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
+            </div>
+            <div class="field-group">
+              <label>SP Certificate (PEM)</label>
+              <textarea rows="4" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
+            </div>
+            <div class="field-group">
+              <div class="toggle-row">
+                <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+                <label>Sign AuthnRequests</label>
+              </div>
+            </div>
+            <div class="field-group">
+              <div class="toggle-row">
+                <label class="toggle"><input type="checkbox" checked/><span class="slider"></span></label>
+                <label>Require Signed Assertions</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">Attribute Mapping</div>
+          <div class="form-grid">
+            <div class="field-group">
+              <label>Email attribute</label>
+              <input type="text" class="short" value="email" />
+            </div>
+            <div class="field-group">
+              <label>Full name attribute</label>
+              <input type="text" class="short" value="displayName" />
+            </div>
+            <div class="field-group">
+              <label>Groups attribute</label>
+              <input type="text" class="short" value="groups" />
+            </div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <a href="#" class="metadata-link">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              Download SP Metadata XML
+            </a>
+            <span style="font-size:11px;color:#6B778C;margin-left:10px;">
+              Upload this to your IdP to register Confluence as a Service Provider.
+            </span>
+          </div>
+        </div>
+
+        <!-- ── Footer buttons ────────────────────────────────── -->
+        <div style="display:flex;gap:10px;margin-top:28px;padding-top:20px;border-top:1px solid #EBECF0;">
+          <button class="btn btn-primary">Save Identity Provider</button>
+          <button class="btn btn-default"
+                  onclick="show('s1',document.querySelectorAll('#screen-tabs button')[0])">
+            Cancel
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div><!-- /screen 2 -->
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 3 — IdP Picker (end-user login page)
+════════════════════════════════════════════════════════════════ -->
+<div id="s3" class="screen">
+  <div class="picker-wrapper">
+    <div class="picker-card">
+      <h1>Sign in to Confluence</h1>
+
+      <!-- Email-hint form -->
+      <div class="field-group">
+        <label>Work email</label>
+        <input type="email" placeholder="you@company.com" />
+        <div class="hint">We'll route you to the right provider automatically.</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;">
+        Continue
+      </button>
+
+      <div class="divider">or choose directly</div>
+
+      <!-- IdP buttons -->
+      <button class="idp-btn">
+        <div>
+          <div class="idp-name">Okta — Corporate</div>
+          <div class="idp-domain">corp.com · corp.net</div>
+        </div>
+        <span class="lozenge lozenge-oidc" style="margin-right:8px;">OIDC</span>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      <button class="idp-btn">
+        <div>
+          <div class="idp-name">Azure AD — Partners</div>
+          <div class="idp-domain">partner.com</div>
+        </div>
+        <span class="lozenge lozenge-saml" style="margin-right:8px;">SAML</span>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+    </div>
+  </div>
+</div><!-- /screen 3 -->
+
+<script>
+function show(screenId, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#screen-tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  btn.classList.add('active');
+}
+
+function switchProto(proto) {
+  proto = proto || document.getElementById('proto-select').value;
+  document.getElementById('proto-select').value = proto;
+  document.getElementById('fields-oidc').style.display = proto === 'oidc' ? '' : 'none';
+  document.getElementById('fields-saml').style.display = proto === 'saml' ? '' : 'none';
+  document.getElementById('tab-oidc').classList.toggle('active', proto === 'oidc');
+  document.getElementById('tab-saml').classList.toggle('active', proto === 'saml');
+}
+</script>
+</body>
+</html>
