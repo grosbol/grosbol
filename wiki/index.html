@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IssueFlow Wiki</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>">
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <button class="hamburger-btn" data-action="toggle-sidebar" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <span class="app-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+      </svg>
+      IssueFlow
+    </span>
+  </header>
+
+  <!-- Sidebar Backdrop (mobile) -->
+  <div class="sidebar-backdrop" data-action="close-sidebar"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h1 class="app-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+        </svg>
+        IssueFlow
+      </h1>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="search" id="sidebar-search" placeholder="Search pages..." data-action="sidebar-search" autocomplete="off" />
+    </div>
+
+    <button class="btn btn-primary btn-new-page" data-action="new-page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Page
+    </button>
+
+    <div class="sidebar-scroll">
+      <!-- Pages Section -->
+      <div class="sidebar-section" id="sidebar-pages">
+        <div class="sidebar-section-title">Pages</div>
+        <div id="page-tree"></div>
+      </div>
+
+      <!-- Tags Section -->
+      <div class="sidebar-section" id="sidebar-tags">
+        <div class="sidebar-section-title">Tags</div>
+        <div id="tag-list"></div>
+      </div>
+
+      <!-- Recent Section -->
+      <div class="sidebar-section" id="sidebar-recent">
+        <div class="sidebar-section-title">Recent</div>
+        <div id="recent-list"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main id="content" class="content">
+    <div class="content-inner" id="view"></div>
+  </main>
+
+  <!-- Modal Overlay -->
+  <div id="modal-overlay" class="modal-overlay hidden" data-action="close-modal">
+    <div id="modal" class="modal"></div>
+  </div>
+
+  <script src="wiki-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
