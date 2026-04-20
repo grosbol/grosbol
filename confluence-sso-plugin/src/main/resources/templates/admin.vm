@@ -1,0 +1,130 @@
+## SSO Plugin Admin — IdP list + global settings
+<html>
+<head>
+    <title>SSO Configuration</title>
+    $webResourceManager.requireResourcesForContext("sso-admin")
+</head>
+<body>
+<div id="sso-admin-wrapper" class="aui-page-panel">
+    <div class="aui-page-panel-inner">
+        <section class="aui-page-panel-content">
+            <h1>Single Sign-On (SSO) Configuration</h1>
+
+            #if($message)
+                <div class="aui-message #if($message.startsWith('Error'))aui-message-error#else aui-message-success#end">
+                    $message
+                </div>
+            #end
+
+            <!-- ── Global Settings ───────────────────────────────────── -->
+            <form method="POST" action="$baseUrl">
+                <input type="hidden" name="action" value="save-global" />
+                <fieldset>
+                    <legend>Global Settings</legend>
+
+                    <div class="field-group">
+                        <label>Enable SSO</label>
+                        <input type="checkbox" name="enabled" value="true"
+                               #if($global.enabled) checked #end />
+                        <div class="description">Master on/off switch for the entire plugin.</div>
+                    </div>
+                    <div class="field-group">
+                        <label>Force SSO</label>
+                        <input type="checkbox" name="forceSSO" value="true"
+                               #if($global.forceSSO) checked #end />
+                        <div class="description">Redirect all unauthenticated requests to SSO (shows the picker if multiple IdPs).</div>
+                    </div>
+                    <div class="field-group">
+                        <label>Default redirect path</label>
+                        <input type="text" name="defaultRedirectPath" class="text"
+                               value="$!global.defaultRedirectPath" />
+                    </div>
+                    <div class="field-group">
+                        <label>Auto-provision users</label>
+                        <input type="checkbox" name="autoProvisionUsers" value="true"
+                               #if($global.autoProvisionUsers) checked #end />
+                    </div>
+                    <div class="field-group">
+                        <label>Sync group membership</label>
+                        <input type="checkbox" name="syncGroupMembership" value="true"
+                               #if($global.syncGroupMembership) checked #end />
+                    </div>
+                    <div class="field-group">
+                        <label>Default group</label>
+                        <input type="text" name="defaultGroup" class="text"
+                               value="$!global.defaultGroup" />
+                    </div>
+                </fieldset>
+                <div class="buttons-container">
+                    <input type="submit" class="aui-button aui-button-primary" value="Save Global Settings" />
+                </div>
+            </form>
+
+            <!-- ── Identity Providers ─────────────────────────────────── -->
+            <h2 style="margin-top:32px;">Identity Providers
+                <a href="$baseUrl?action=edit" class="aui-button aui-button-primary"
+                   style="float:right;font-size:0.85em;">+ Add IdP</a>
+            </h2>
+
+            #if($idps.isEmpty())
+                <div class="aui-message aui-message-info">
+                    No Identity Providers configured yet.
+                    <a href="$baseUrl?action=edit">Add your first IdP.</a>
+                </div>
+            #else
+                <table class="aui" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Display Name</th>
+                            <th>Protocol</th>
+                            <th>Domain Hints</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        #foreach($idp in $idps)
+                        <tr>
+                            <td><code>$idp.id</code></td>
+                            <td>$idp.displayName</td>
+                            <td>$idp.protocol.name()</td>
+                            <td>
+                                #if($idp.domainHint && !$idp.domainHint.isEmpty())
+                                    <code>$idp.domainHint</code>
+                                #else
+                                    <span style="color:#97A0AF;">—</span>
+                                #end
+                            </td>
+                            <td>
+                                #if($idp.enabled)
+                                    <span class="aui-lozenge aui-lozenge-success">Enabled</span>
+                                #else
+                                    <span class="aui-lozenge">Disabled</span>
+                                #end
+                            </td>
+                            <td>
+                                <a href="$baseUrl?action=edit&idp=$idp.id" class="aui-button aui-button-subtle">Edit</a>
+                                #if($idp.protocol.name() == 'SAML')
+                                    <a href="/plugins/servlet/sso/saml/metadata?idp=$idp.id"
+                                       target="_blank" class="aui-button aui-button-subtle">Metadata</a>
+                                #end
+                                <form method="POST" action="$baseUrl" style="display:inline;"
+                                      onsubmit="return confirm('Delete IdP \'$idp.id\'?')">
+                                    <input type="hidden" name="action" value="delete-idp" />
+                                    <input type="hidden" name="idp"    value="$idp.id" />
+                                    <button type="submit" class="aui-button aui-button-subtle"
+                                            style="color:#DE350B;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        #end
+                    </tbody>
+                </table>
+            #end
+
+        </section>
+    </div>
+</div>
+</body>
+</html>

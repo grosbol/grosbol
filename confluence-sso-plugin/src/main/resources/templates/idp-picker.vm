@@ -1,0 +1,54 @@
+## Identity Provider picker page
+<html>
+<head>
+    <title>Select Identity Provider</title>
+    $webResourceManager.requireResourcesForContext("sso-admin")
+</head>
+<body>
+<div id="sso-picker-wrapper" class="aui-page-panel" style="max-width:480px;margin:60px auto;">
+    <div class="aui-page-panel-inner">
+        <section class="aui-page-panel-content">
+            <h1 style="margin-bottom:24px;">Sign in</h1>
+
+            #if($error)
+                <div class="aui-message aui-message-warning">
+                    <span class="aui-icon aui-icon-small aui-iconfont-warning"></span>
+                    $error
+                </div>
+            #end
+
+            ## ── Email-hint form ──────────────────────────────────────────
+            <form method="POST" action="/plugins/servlet/sso/pick" style="margin-bottom:24px;">
+                <input type="hidden" name="returnTo" value="$!returnTo" />
+                <div class="field-group">
+                    <label for="email">Work email</label>
+                    <input type="email" id="email" name="email" class="text"
+                           placeholder="you@company.com" value="$!email"
+                           style="width:100%;" />
+                    <div class="description">We'll choose your provider automatically.</div>
+                </div>
+                <input type="submit" class="aui-button aui-button-primary" value="Continue" />
+            </form>
+
+            <div style="text-align:center;color:#6B778C;margin:16px 0;">— or choose directly —</div>
+
+            ## ── IdP buttons ──────────────────────────────────────────────
+            <ul style="list-style:none;padding:0;margin:0;">
+                #foreach($idp in $idps)
+                    <li style="margin-bottom:10px;">
+                        <a href="/plugins/servlet/sso/#if($idp.protocol.name() == 'OIDC')oidc#else saml#end/login?idp=$idp.id&amp;returnTo=$!{returnTo}"
+                           class="aui-button" style="width:100%;text-align:center;display:block;">
+                            $idp.displayName
+                            <span style="font-size:0.75em;color:#97A0AF;margin-left:8px;">
+                                $idp.protocol.name()
+                            </span>
+                        </a>
+                    </li>
+                #end
+            </ul>
+
+        </section>
+    </div>
+</div>
+</body>
+</html>
