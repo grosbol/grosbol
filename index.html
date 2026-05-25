@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HP-41C Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="calculator">
+    <div class="brand">
+      <span class="hp">hp</span>
+      <span class="model">41C</span>
+    </div>
+
+    <div class="display-section">
+      <div class="stack-display">
+        <div class="stack-row"><span class="stack-label">T</span><span class="stack-value" id="reg-t">0.0000</span></div>
+        <div class="stack-row"><span class="stack-label">Z</span><span class="stack-value" id="reg-z">0.0000</span></div>
+        <div class="stack-row"><span class="stack-label">Y</span><span class="stack-value" id="reg-y">0.0000</span></div>
+      </div>
+      <div class="display">
+        <span class="display-text" id="display">0.0000</span>
+        <span class="display-annunciators">
+          <span class="ann" id="ann-user">USER</span>
+          <span class="ann" id="ann-shift">SHIFT</span>
+          <span class="ann" id="ann-prgm">PRGM</span>
+          <span class="ann" id="ann-alpha">ALPHA</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="keypad">
+
+      <!-- Row 1: Shifted functions (top labels) -->
+      <div class="key-row">
+        <div class="key-group">
+          <div class="key-top-label">SIGMA+</div>
+          <button class="key key-top" id="key-sigma" data-action="sigma">Σ+</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">SIGMA-</div>
+          <button class="key key-top" id="key-inv" data-action="inv">1/x</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">%</div>
+          <button class="key key-top" id="key-sqrt" data-action="sqrt">√x</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">ARC</div>
+          <button class="key key-top" id="key-log" data-action="log">LOG</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">DISP</div>
+          <button class="key key-top" id="key-ln" data-action="ln">LN</button>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="key-row">
+        <div class="key-group">
+          <div class="key-top-label">CATALOG</div>
+          <button class="key key-yellow" id="key-shift" data-action="shift">SHIFT</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">FIX</div>
+          <button class="key key-blue" id="key-sin" data-action="sin">SIN</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">SCI</div>
+          <button class="key key-blue" id="key-cos" data-action="cos">COS</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">ENG</div>
+          <button class="key key-blue" id="key-tan" data-action="tan">TAN</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">DEG</div>
+          <button class="key key-blue" id="key-mode" data-action="mode">DEG</button>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="key-row">
+        <div class="key-group">
+          <div class="key-top-label">OFF</div>
+          <button class="key key-special" id="key-on" data-action="on">ON</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">LAST x</div>
+          <button class="key key-white" id="key-xy" data-action="xy">x↔y</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">CLEAR</div>
+          <button class="key key-white" id="key-roll" data-action="roll">R↓</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">BST</div>
+          <button class="key key-white" id="key-sto" data-action="sto">STO</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">GTO</div>
+          <button class="key key-white" id="key-rcl" data-action="rcl">RCL</button>
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="key-row">
+        <div class="key-group">
+          <div class="key-top-label">P/R</div>
+          <button class="key key-white wide" id="key-enter" data-action="enter">ENTER↑</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">CLS</div>
+          <button class="key key-white" id="key-chs" data-action="chs">CHS</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">→R</div>
+          <button class="key key-white" id="key-eex" data-action="eex">EEX</button>
+        </div>
+        <div class="key-group">
+          <div class="key-top-label">DEL</div>
+          <button class="key key-white" id="key-clx" data-action="clx">CLX</button>
+        </div>
+      </div>
+
+      <!-- Row 5 -->
+      <div class="key-row">
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="7">7</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="8">8</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="9">9</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-op" data-action="op" data-op="div">÷</button>
+        </div>
+      </div>
+
+      <!-- Row 6 -->
+      <div class="key-row">
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="4">4</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="5">5</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="6">6</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-op" data-action="op" data-op="mul">×</button>
+        </div>
+      </div>
+
+      <!-- Row 7 -->
+      <div class="key-row">
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="1">1</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="2">2</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="digit" data-digit="3">3</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-op" data-action="op" data-op="sub">−</button>
+        </div>
+      </div>
+
+      <!-- Row 8 -->
+      <div class="key-row">
+        <div class="key-group">
+          <button class="key key-num wide" data-action="digit" data-digit="0">0</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-num" data-action="dot">.</button>
+        </div>
+        <div class="key-group">
+          <button class="key key-op" data-action="op" data-op="add">+</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div class="model-line">HEWLETT · PACKARD</div>
+    </div>
+  </div>
+
+  <script src="calculator.js"></script>
+</body>
+</html>
